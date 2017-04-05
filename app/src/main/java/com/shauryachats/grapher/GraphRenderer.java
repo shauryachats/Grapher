@@ -61,7 +61,7 @@ class GraphRenderer implements Renderer {
     private static final int STRIDE =(POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
     private int aColorLocation;
 
-    private static final double PRECISION = 0.01;
+    private static final double PRECISION = 0.003;
 
     private int count = 0;
 
@@ -124,13 +124,9 @@ class GraphRenderer implements Renderer {
         String vertexShaderSource = TextResourceReader.readTextFileFromResource(context, R.raw.simple_vertex_shader);
         String fragmentShaderSource = TextResourceReader.readTextFileFromResource(context, R.raw.simple_fragment_shader);
 
-        Log.d("Shader", vertexShaderSource);
-        Log.d("Shader", fragmentShaderSource);
-
         int vertexShader = ShaderHelper.compileVertexShader(vertexShaderSource);
         int fragmentShader = ShaderHelper.compileFragmentShader(fragmentShaderSource);
 
-        Log.d("Shader", " " + vertexShader + " " + fragmentShader);
 
         program = ShaderHelper.linkProgram(vertexShader, fragmentShader);
         if (LoggerConfig.ON)

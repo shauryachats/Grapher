@@ -2,6 +2,8 @@ package com.shauryachats.grapher;
 
 import android.util.Log;
 
+import com.shauryachats.grapher.android.util.LoggerConfig;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
@@ -61,7 +63,9 @@ public class PostfixEvaluator {
 
     public double eval(double x) {
 
-        Log.d(TAG, "Evaluating postfix.");
+        if (LoggerConfig.ON)
+            Log.d(TAG, "Evaluating postfix.");
+
         Stack<Double> stack = new Stack<Double>();
 
         for (String token : postFix)
@@ -97,9 +101,7 @@ public class PostfixEvaluator {
                 }
                 else
                 {
-                    Log.d(TAG, "stack.size() = " + stack.size());
                     double var = stack.pop();
-                    Log.d(TAG, "variable = " + var);
                     switch (token)
                     {
                         case "√":
@@ -145,7 +147,9 @@ public class PostfixEvaluator {
             }
         }
 
-        Log.d(TAG, "The result is " + Double.toString(stack.peek()));
+        if (LoggerConfig.ON)
+            Log.d(TAG, "The result is " + Double.toString(stack.peek()));
+
         return stack.pop();
     }
 

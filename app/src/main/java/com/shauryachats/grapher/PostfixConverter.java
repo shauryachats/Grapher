@@ -3,9 +3,12 @@ package com.shauryachats.grapher;
 import android.util.Log;
 import android.widget.TabHost;
 
+import com.shauryachats.grapher.android.util.LoggerConfig;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,61 +86,63 @@ public class PostfixConverter {
     // splitting infix terms.
     private void splitInfix() {
 
-        Log.d(TAG, "Inside splitInfix() with mainStr = " + mainStr);
+        if (LoggerConfig.ON)
+            Log.d(TAG, "Inside splitInfix() with mainStr = " + mainStr);
 
         Matcher m = Pattern.compile(regexString).matcher(mainStr);
 
         while (m.find())
             splitStr.add(m.group());
 
-        String debugStr = "";
-        for (String s : splitStr)
-            debugStr += s + ',';
+        if (LoggerConfig.ON) {
+            String debugStr = "";
+            for (String s : splitStr)
+                debugStr += s + ',';
 
-        Log.d(TAG, debugStr);
+            Log.d(TAG, debugStr);
+        }
     }
 
     //Converts infix to postfix expression.
 
     //TODO: Check for invalid infix expressions.
     private void infixToPostfix() {
-        Log.d(TAG, "Inside infixToPostfix()");
+        if (LoggerConfig.ON)
+            Log.d(TAG, "Inside infixToPostfix()");
 
         Stack<String> tokenStack = new Stack<String>();
-        for (String token : splitStr)
-        {
-            Log.d(TAG, "next token = " + token);
+        for (String token : splitStr) {
+            if (LoggerConfig.ON)
+                Log.d(TAG, "next token = " + token);
+
             //if token is an operator
-            if (token.equals("("))
-            {
+            if (token.equals("(")) {
                 tokenStack.push("(");
-            }
-            else if (token.equals(")"))
-            {
-                while (!tokenStack.peek().equals("("))
-                {
+            } else if (token.equals(")")) {
+                while (!tokenStack.peek().equals("(")) {
                     postFix.add(tokenStack.pop());
                 }
                 //remove the extra '('
                 tokenStack.pop();
-            }
-            else if (operator.containsKey(token))
-            {
+            } else if (operator.containsKey(token)) {
                 while (!tokenStack.peek().equals("(") && operator.get(token) <= operator.get(tokenStack.peek()))
                     postFix.add(tokenStack.pop());
                 tokenStack.push(token);
-            }
-            else //it is a variable
+            } else //it is a variable
             {
                 postFix.add(token);
             }
         }
 
-        String debugString = "";
-        for (String s: postFix)
-            debugString += s + ',';
+        if (LoggerConfig.ON) {
+            String debugString = "";
 
-        Log.d(TAG, "postFix = " + debugString);
+            for (String s : postFix)
+                debugString += s + ',';
+
+            Log.d(TAG, "postFix = " + debugString);
+
+        }
     }
 
 
