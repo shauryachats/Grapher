@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * Postfix class is meant to convert the Infix to Postfix notations.
  */
 
-public class PostfixConverter {
+public class EquationEvaluator {
 
     private String regexString = "";
     private static HashMap<String, Integer> operator;
@@ -41,7 +41,7 @@ public class PostfixConverter {
         return postFix;
     }
 
-    public PostfixConverter(String str)
+    public EquationEvaluator(String str)
     {
         initializeOperators();
         initRegString();
@@ -63,6 +63,11 @@ public class PostfixConverter {
 
         //converting infix to postfix
         infixToPostfix();
+    }
+
+    public EquationEvaluator(ArrayList<String> postfixList)
+    {
+        postFix = postfixList;
     }
 
     private void initializeOperators()
@@ -145,5 +150,115 @@ public class PostfixConverter {
         }
     }
 
+    public static boolean isNumeric(String str)
+    {
+        return str.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    private static boolean isBinaryOperator(String str)
+    {
+        switch (str)
+        {
+            case "+":
+            case "-":
+            case "*":
+            case "/":
+            case "^": return true;
+            default: return false;
+        }
+    }
+
+
+    public double eval(double x) {
+
+        if (LoggerConfig.ON)
+            Log.d(TAG, "Evaluating postfix.");
+
+        Stack<Double> stack = new Stack<Double>();
+
+        for (String token : postFix)
+        {
+            if (isNumeric(token))
+            {
+                stack.push(Double.parseDouble(token));
+            }
+            else if (operator.containsKey(token))
+            {
+                if (isBinaryOperator(token))
+                {
+                    double var2 = stack.pop();
+                    double var1 = stack.pop();
+                    switch (token)
+                    {
+                        case "+":
+                            stack.push(var1 + var2);
+                            break;
+                        case "-":
+                            stack.push(var1 - var2);
+                            break;
+                        case "*":
+                            stack.push(var1 * var2);
+                            break;
+                        case "/":
+                            stack.push(var1 / var2);
+                            break;
+                        case "^":
+                            stack.push(Math.pow(var1, var2));
+                            break;
+                    }
+                }
+                else
+                {
+                    double var = stack.pop();
+                    switch (token)
+                    {
+                        case "√":
+                            stack.push(Math.sqrt(var));
+                            break;
+                        case "sin":
+                            stack.push(Math.sin(var));
+                            break;
+                        case "cos":
+                            stack.push(Math.cos(var));
+                            break;
+                        case "tan":
+                            stack.push(Math.tan(var));
+                            break;
+                        case "log":
+                            stack.push(Math.log10(var));
+                            break;
+                        case "ln":
+                            stack.push(Math.log(var));
+                            break;
+                        case "asin":
+                            stack.push(Math.asin(var));
+                            break;
+                        case "acos":
+                            stack.push(Math.acos(var));
+                            break;
+                        case "atan":
+                            stack.push(Math.atan(var));
+                            break;
+                    }
+                }
+            }
+            else //it is a variable.
+            {
+                if (token.equals("x"))
+                {
+                    stack.push(x);
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+
+        if (LoggerConfig.ON)
+            Log.d(TAG, "The result is " + Double.toString(stack.peek()));
+
+        return stack.pop();
+    }
 
 }

@@ -1,9 +1,7 @@
 package com.shauryachats.grapher;
 
 import android.content.Context;
-import android.graphics.Shader;
 import android.opengl.GLSurfaceView.Renderer;
-import android.util.Log;
 
 import com.shauryachats.grapher.android.util.LoggerConfig;
 import com.shauryachats.grapher.android.util.ShaderHelper;
@@ -20,23 +18,17 @@ import java.util.List;
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_LINE_STRIP;
-import static android.opengl.GLES20.GL_TRIANGLES;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
-import static android.opengl.GLES20.glGetUniformLocation;
-import static android.opengl.GLES20.glUniform4f;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
 import static android.opengl.GLES20.glViewport;
 import static javax.microedition.khronos.opengles.GL10.GL_LINES;
-import static javax.microedition.khronos.opengles.GL10.GL_POINTS;
-import static javax.microedition.khronos.opengles.GL10.GL_TRIANGLE_FAN;
 
 import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
@@ -61,7 +53,7 @@ class GraphRenderer implements Renderer {
     private static final int STRIDE =(POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
     private int aColorLocation;
 
-    private static final double PRECISION = 0.003;
+    private static final double PRECISION = 0.01;
 
     private int count = 0;
 
@@ -76,7 +68,25 @@ class GraphRenderer implements Renderer {
         return floatArray;
     }
 
-    public GraphRenderer(Context context, PostfixEvaluator postfixEvaluator)
+    ArrayList<Float> evaluate(EquationEvaluator equationEvaluator)
+    {
+        ArrayList<Float> arrayList = new ArrayList<Float>();
+
+        //Run postfixEvaluator here.
+        for (float i = -1.0f; i <= 1.0f; i += PRECISION)
+        {
+            arrayList.add(i);
+            arrayList.add((float)equationEvaluator.eval((double)i));
+            arrayList.add(1f);
+            arrayList.add(0f);
+            arrayList.add(0f);
+            ++count;
+        }
+
+        return arrayList;
+    }
+
+    public GraphRenderer(Context context, EquationEvaluator equationEvaluator)
     {
         this.context = context;
         Float[] axes = {
@@ -94,18 +104,7 @@ class GraphRenderer implements Renderer {
                 Arrays.asList(axes)
         );
 
-        //Run postfixEvaluator here.
-        for (float i = -1.0f; i <= 1.0f; i += PRECISION)
-        {
-            arrayList.add(i);
-            arrayList.add((float)postfixEvaluator.eval((double)i));
-            arrayList.add(1f);
-            arrayList.add(0f);
-            arrayList.add(1f);
-            ++count;
-        }
-
-
+        arrayList.addAll(evaluate(equationEvaluator));
         float[] trueCoordinates = convertFloatArrayListToFloatArray(arrayList);
 
         vertexData = ByteBuffer

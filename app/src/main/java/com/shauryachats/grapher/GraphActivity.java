@@ -25,12 +25,12 @@ public class GraphActivity extends AppCompatActivity
         Bundle bundle = intent.getExtras();
 
         ArrayList<String> postfix = bundle.getStringArrayList("postfix");
-        PostfixEvaluator postfixEvaluator = new PostfixEvaluator(postfix);
+        EquationEvaluator equationEvaluator = new EquationEvaluator(postfix);
 
         glSurfaceView = new GLSurfaceView(this);
 
         glSurfaceView.setEGLContextClientVersion(2);
-        glSurfaceView.setRenderer(new GraphRenderer(this, postfixEvaluator));
+        glSurfaceView.setRenderer(new GraphRenderer(this, equationEvaluator));
         rendererSet = true;
 
         setContentView(glSurfaceView);

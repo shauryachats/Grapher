@@ -11,16 +11,17 @@
 
     <EditText
         android:id="@+id/editText"
-        android:layout_width="344dp"
+        android:layout_width="290dp"
         android:layout_height="127dp"
         android:ems="10"
         android:textSize="200px"
         android:text="√x"
         android:inputType="textFilter"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        />
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="0dp"
+        tools:layout_editor_absoluteX="94dp" />
 
     <EditText
         android:id="@+id/valueX"
@@ -54,4 +55,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/valueX" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="71dp"
+        android:layout_height="107dp"
+        android:text="f(x)="
+        android:textSize="50px"
+        android:textAlignment="center"
+        android:gravity="center"
+
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
 </android.support.constraint.ConstraintLayout>

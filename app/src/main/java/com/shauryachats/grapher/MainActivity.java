@@ -29,9 +29,8 @@ public class MainActivity extends AppCompatActivity {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostfixConverter p = new PostfixConverter(mainEdit.getText().toString());
+                EquationEvaluator equationEvaluator = new EquationEvaluator(mainEdit.getText().toString());
 
-                PostfixEvaluator px = new PostfixEvaluator(p.getPostfix());
                 HashMap<String, Double> h = new HashMap<String, Double>();
 
                 //Checking if valueOfX is empty
@@ -46,21 +45,21 @@ public class MainActivity extends AppCompatActivity {
 
                 double x = Double.parseDouble(valueOfX.getText().toString());
                 double y = Double.parseDouble(valueOfY.getText().toString());
-                Toast.makeText(MainActivity.this, Double.toString(px.eval(x)), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, Double.toString(equationEvaluator.eval(x)), Toast.LENGTH_SHORT).show();
 
                 //Shift control to GraphActivity
-                plotGraph(v, p);
+                plotGraph(v, equationEvaluator);
 
             }
         });
 
     }
 
-    public void plotGraph(View view, PostfixConverter postfixConverter)
+    public void plotGraph(View view, EquationEvaluator equationEvaluator)
     {
         Intent intent = new Intent(this, GraphActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putStringArrayList("postfix", postfixConverter.getPostfix());
+        bundle.putStringArrayList("postfix", equationEvaluator.getPostfix());
         intent.putExtras(bundle);
         startActivity(intent);
     }
