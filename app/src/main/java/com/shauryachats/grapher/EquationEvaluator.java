@@ -1,20 +1,34 @@
 package com.shauryachats.grapher;
 
-import android.util.Log;
-import android.widget.TabHost;
 
 import com.shauryachats.grapher.android.util.LoggerConfig;
 
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import android.util.Log;
 
 /**
  * Postfix class is meant to convert the Infix to Postfix notations.
  */
+
+
+class InvalidPostfixException extends Exception
+{
+    public InvalidPostfixException()
+    {
+
+    }
+
+    public InvalidPostfixException(String message)
+    {
+        super(message);
+    }
+}
 
 public class EquationEvaluator {
 
@@ -43,6 +57,11 @@ public class EquationEvaluator {
 
     public EquationEvaluator(String str)
     {
+        if (str.isEmpty()) {
+            mainStr = "";
+            return;
+        }
+
         initializeOperators();
         initRegString();
 
@@ -169,12 +188,14 @@ public class EquationEvaluator {
     }
 
 
-    public double eval(double x) {
+    public double eval(double x) throws InvalidPostfixException {
 
-        if (LoggerConfig.ON)
+        if (LoggerConfig.ON) {
             Log.d(TAG, "Evaluating postfix.");
+        }
 
         Stack<Double> stack = new Stack<Double>();
+        double var2, var1;
 
         for (String token : postFix)
         {
@@ -186,8 +207,14 @@ public class EquationEvaluator {
             {
                 if (isBinaryOperator(token))
                 {
-                    double var2 = stack.pop();
-                    double var1 = stack.pop();
+                    //if stack is empty.
+                    try {
+                        var2 = stack.pop();
+                        var1 = stack.pop();
+                    } catch (EmptyStackException e) {
+                        throw new InvalidPostfixException();
+                    }
+
                     switch (token)
                     {
                         case "+":
@@ -209,35 +236,40 @@ public class EquationEvaluator {
                 }
                 else
                 {
-                    double var = stack.pop();
+                    try {
+                        var1 = stack.pop();
+                    } catch (EmptyStackException e) {
+                        throw new InvalidPostfixException();
+                    }
+
                     switch (token)
                     {
                         case "√":
-                            stack.push(Math.sqrt(var));
+                            stack.push(Math.sqrt(var1));
                             break;
                         case "sin":
-                            stack.push(Math.sin(var));
+                            stack.push(Math.sin(var1));
                             break;
                         case "cos":
-                            stack.push(Math.cos(var));
+                            stack.push(Math.cos(var1));
                             break;
                         case "tan":
-                            stack.push(Math.tan(var));
+                            stack.push(Math.tan(var1));
                             break;
                         case "log":
-                            stack.push(Math.log10(var));
+                            stack.push(Math.log10(var1));
                             break;
                         case "ln":
-                            stack.push(Math.log(var));
+                            stack.push(Math.log(var1));
                             break;
                         case "asin":
-                            stack.push(Math.asin(var));
+                            stack.push(Math.asin(var1));
                             break;
                         case "acos":
-                            stack.push(Math.acos(var));
+                            stack.push(Math.acos(var1));
                             break;
                         case "atan":
-                            stack.push(Math.atan(var));
+                            stack.push(Math.atan(var1));
                             break;
                     }
                 }
@@ -250,15 +282,34 @@ public class EquationEvaluator {
                 }
                 else
                 {
-                    return -1;
+                    throw new InvalidPostfixException();
                 }
             }
         }
+
+        if (stack.size() > 1)
+            throw new InvalidPostfixException();
 
         if (LoggerConfig.ON)
             Log.d(TAG, "The result is " + Double.toString(stack.peek()));
 
         return stack.pop();
+    }
+
+    public boolean isValid()
+    {
+
+        if (mainStr.isEmpty())
+            return false;
+
+        try {
+            eval(0);
+        }
+        catch (InvalidPostfixException e) {
+            return false;
+        }
+
+        return true;
     }
 
 }
