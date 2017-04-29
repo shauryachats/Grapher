@@ -5,23 +5,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PathEffect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by shauryachats on 17/4/17.
@@ -75,6 +69,9 @@ public class GraphicActivity extends AppCompatActivity{
         public CanvasView(Context context) {
             super(context);
 
+            /**
+             * scaleGestureDetector is responsible for the two fingered zooming.
+             */
             scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.OnScaleGestureListener() {
                 @Override
                 public boolean onScale(ScaleGestureDetector detector) {
@@ -99,7 +96,6 @@ public class GraphicActivity extends AppCompatActivity{
 
                 }
             });
-            Log.d(TAG, "ctor()");
         }
 
         double getXCoords(double x)
@@ -114,11 +110,8 @@ public class GraphicActivity extends AppCompatActivity{
 
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            // Log.d(TAG, "onTouchEvent()");
-            //Log.d(TAG, "onTouchEvent()" + event.getX() + " " + event.getY());
 
             scaleGestureDetector.onTouchEvent(event);
-            //return true;
 
             int eventAction = event.getAction();
             int fingersHere = event.getPointerCount();
@@ -161,7 +154,6 @@ public class GraphicActivity extends AppCompatActivity{
                     return false;
             }
 
-            //  Toast.makeText(GraphicActivity.this, "Touched!", Toast.LENGTH_SHORT).show();
             return super.onTouchEvent(event);
 
         }
@@ -235,8 +227,6 @@ public class GraphicActivity extends AppCompatActivity{
                 {
                     return;
                 }
-
-//                y = Math.sin(x);
                 ycord = getYCoords(y);
                 if (first) {
                     canvas.drawLine((float) prevx, (float) prevy, (float) xcord, (float) ycord, paint);
@@ -324,16 +314,10 @@ public class GraphicActivity extends AppCompatActivity{
             }
         }
 
-        private void drawOrigin(Canvas canvas) {
-            Paint paint = new Paint();
-
-            paint.setColor(Color.WHITE);
-            paint.setAntiAlias(true);
-            paint.setTextSize(50f);
-
-            canvas.drawText("("+round(centerX,2)+","+round(centerY,2)+")", semiwidth+20.0f, semiheight+20.0f, paint);
-        }
-
+        /**
+         * Draws the X and Y axis.
+         * @param canvas
+         */
         private void drawAxes(Canvas canvas) {
             Paint paint = new Paint();
 
