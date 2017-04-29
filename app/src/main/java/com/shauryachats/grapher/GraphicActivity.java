@@ -29,22 +29,10 @@ import java.util.HashMap;
 
 public class GraphicActivity extends AppCompatActivity{
 
-    int semiheight, semiwidth;
-    double scale;
-    double centerX, centerY;
-
     double precision;
-
-    boolean multiTouch;
-    long timeFingersSwitched;
-
-    HashMap<Double, Double> data;
-
-    float prevX, prevY;
-
     private ScaleGestureDetector scaleGestureDetector;
-    ArrayList<EquationEvaluator> equationEvaluators = new ArrayList<EquationEvaluator>();
 
+    ArrayList<EquationEvaluator> equationEvaluators = new ArrayList<EquationEvaluator>();
     public final String TAG = "GraphicActivity";
 
     @Override
@@ -64,20 +52,22 @@ public class GraphicActivity extends AppCompatActivity{
 
         precision = bundle.getDouble("precision");
 
-        centerX = centerY = 0.0f;
-        scale = 1.0f;
-
-        multiTouch = false;
-
-        data = new HashMap<Double, Double>();
-
-        CanvasView canvas = new CanvasView(this);
-        setContentView(canvas);
+        setContentView(new CanvasView(this));
 
     }
-    public class CanvasView extends View {
 
+    public class CanvasView extends View {
         private static final long ALLOWED_TIME = 100;
+
+        int semiheight, semiwidth;
+        double scale = 1.0f;
+        double centerX = 0.0f, centerY = 0.0f;
+
+        boolean multiTouch = false;
+        long timeFingersSwitched;
+
+        float prevX, prevY;
+
         private static final int MIN_TEXT_GAP_FROM_GRID = 5;
         private static final int MAX_X_TEXT_GAP_FROM_GRID = 35;
         private static final int MAX_Y_TEXT_GAP_FROM_GRID = 70;
@@ -231,8 +221,6 @@ public class GraphicActivity extends AppCompatActivity{
             double XRightLimit = round(centerX + scale,3);
 
             boolean first = false;
-
-            Log.d(TAG + "!", "" + data.size() + " " + XLeftLimit + " " + XRightLimit + " " + EPS);
 
             for (double x = XLeftLimit; x <= XRightLimit; x += EPS) {
 
