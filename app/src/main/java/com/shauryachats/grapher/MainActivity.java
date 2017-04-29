@@ -6,91 +6,107 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private GLSurfaceView glSurfaceView;
-    private boolean rendererSet = false;
+    ArrayList<Character> equationIndexes;
 
-    EquationEvaluator equationEvaluator;
+    final static int MAX_EXPRESSIONS_ALLOWED = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final EditText mainEdit = (EditText) findViewById(R.id.editText);
-        final EditText valueOfX = (EditText) findViewById(R.id.valueX);
-        final EditText valueOfY = (EditText) findViewById(R.id.valueY);
         final Button submitButton = (Button) findViewById(R.id.button);
+        final Button addButton = (Button) findViewById(R.id.add_button);
+        final Button removeButton = (Button) findViewById(R.id.remove_button);
 
+        equationIndexes = new ArrayList<Character>();
+        equationIndexes.add('f');
 
-        mainEdit.setText("0.2*sin(5*x)");
-        valueOfY.setText("20");
+        final ListView listView = (ListView) findViewById(R.id.listview);
 
-        equationEvaluator = new EquationEvaluator(mainEdit.getText().toString());
+        final CustomAdapter newAdapter = new CustomAdapter(this, equationIndexes, submitButton);
+        listView.setAdapter(newAdapter);
 
+        removeButton.setEnabled(false);
 
-        //To enable/disable the Evaluate button according to the validity of the postfix expression.
-        mainEdit.addTextChangedListener(new TextWatcher() {
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void onClick(View v) {
+                //equationIndexes.add(equationIndexes.size());
 
+                removeButton.setEnabled(true);
+
+                if (newAdapter.getCount() == MAX_EXPRESSIONS_ALLOWED){
+                    return;
+                }
+
+                Character a = newAdapter.getItem(newAdapter.getCount()-1);
+                a++;
+                newAdapter.add(a);
+
+                if (newAdapter.getCount() == MAX_EXPRESSIONS_ALLOWED) {
+                    addButton.setEnabled(false);
+                }
             }
+        });
 
+        removeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void onClick(View v) {
 
-            }
+                addButton.setEnabled(true);
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                equationEvaluator = new EquationEvaluator(mainEdit.getText().toString());
-                submitButton.setEnabled(equationEvaluator.isValid());
+                if (newAdapter.getCount() == 1) {
+                    return;
+                }
+
+                Character a = newAdapter.getItem(newAdapter.getCount()-1);
+                newAdapter.removeFromExpressions(newAdapter.getCount()-1);
+                newAdapter.remove(a);
+
+                if (newAdapter.getCount() == 1)
+                {
+                    removeButton.setEnabled(false);
+                }
             }
         });
 
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                equationEvaluator = new EquationEvaluator(mainEdit.getText().toString());
-
-                HashMap<String, Double> h = new HashMap<String, Double>();
-
-                //Checking if valueOfX is empty
-                if (valueOfX.getText().toString().equals("")) {
-                    valueOfX.setText("0.0");
-                }
-
-                //Checking if valueOfY is empty
-                if (valueOfY.getText().toString().equals("")) {
-                    valueOfY.setText("0.0");
-                }
-
-                double x = Double.parseDouble(valueOfX.getText().toString());
-                double y = Double.parseDouble(valueOfY.getText().toString());
 
                 //Shift control to GraphicActivity
-                graphicActivity(v, equationEvaluator, y);
+                graphicActivity(v, newAdapter.getExpressions(), 70f);
 
 
             }
         });
 
+
     }
 
-    public void graphicActivity(View view, EquationEvaluator equationEvaluator, double y)
+    // Methdd to shift from MainActivity to GraphicActivity
+    public void graphicActivity(View view, ArrayList<String> listOfExpressions, double precision)
     {
         Intent intent = new Intent(this, GraphicActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putStringArrayList("postfix", equationEvaluator.getPostfix());
-        bundle.putDouble("precision", y);
+        bundle.putStringArrayList("postfix", listOfExpressions);
+        bundle.putDouble("precision", precision);
         intent.putExtras(bundle);
         startActivity(intent);
     }

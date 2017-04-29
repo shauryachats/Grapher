@@ -7,64 +7,58 @@
     android:layout_height="match_parent"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    tools:context="com.shauryachats.grapher.MainActivity">
+    tools:context="com.shauryachats.grapher.MainActivity"
+    >
 
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="290dp"
-        android:layout_height="127dp"
-        android:ems="10"
-        android:textSize="200px"
-        android:text="√x"
-        android:inputType="textFilter"
-        app:layout_constraintRight_toRightOf="parent"
+    <TextView
+        android:id="@+id/introText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="0dp"
-        android:layout_marginRight="0dp"
-        tools:layout_editor_absoluteX="94dp" />
-
-    <EditText
-        android:id="@+id/valueX"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="0"
-        android:inputType="numberDecimal"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText"
-        android:layout_marginTop="0dp"
-        app:layout_constraintHorizontal_bias="0.05" />
+        android:text="Expressions here."
+        android:textSize="20dp"
+        />
 
-    <EditText
-        android:id="@+id/valueY"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-8dp"
-        android:inputType="numberDecimal"
-        android:text="10"
-        app:layout_constraintHorizontal_bias="0.938"
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/listview"
+        android:layout_width="471dp"
+        android:layout_height="272dp"
+        app:layout_constraintTop_toBottomOf="@+id/introText"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        android:layout_marginTop="0dp"
+        />
+
+    <Button
+        android:id="@+id/add_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/listview"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="0dp"
+        />
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Evaluate"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/add_button"
+        app:layout_constraintRight_toLeftOf="@+id/remove_button"
+        app:layout_constraintTop_toBottomOf="@+id/listview"
+        />
+
+    <Button
+        android:id="@+id/remove_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remove"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/valueX" />
+        app:layout_constraintTop_toBottomOf="@+id/listview"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="16dp" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="71dp"
-        android:layout_height="107dp"
-        android:text="f(x)="
-        android:textSize="50px"
-        android:textAlignment="center"
-        android:gravity="center"
 
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="16dp" />
 </android.support.constraint.ConstraintLayout>

@@ -41,6 +41,8 @@ public class EquationEvaluator {
     private ArrayList<String> splitStr;
     private ArrayList<String> postFix;
 
+    boolean isValidExpression;
+
     private void initRegString()
     {
         regexString += "([0-9]{0,10}\\.[0-9]{0,10})|";  //decimal numbers
@@ -76,6 +78,8 @@ public class EquationEvaluator {
 
         //pre-append and post-append brackets for easy eval.
         mainStr = "(" + mainStr + ')';
+
+        isValidExpression = true; //Assuming that the expression given to us to be parsed is valid.
 
         //splitting mainStr into splitStr
         splitInfix();
@@ -135,27 +139,34 @@ public class EquationEvaluator {
             Log.d(TAG, "Inside infixToPostfix()");
 
         Stack<String> tokenStack = new Stack<String>();
-        for (String token : splitStr) {
-            if (LoggerConfig.ON)
-                Log.d(TAG, "next token = " + token);
+        try {
+            for (String token : splitStr) {
+                if (LoggerConfig.ON)
+                    Log.d(TAG, "next token = " + token);
 
-            //if token is an operator
-            if (token.equals("(")) {
-                tokenStack.push("(");
-            } else if (token.equals(")")) {
-                while (!tokenStack.peek().equals("(")) {
-                    postFix.add(tokenStack.pop());
+                //if token is an operator
+                if (token.equals("(")) {
+                    tokenStack.push("(");
+                } else if (token.equals(")")) {
+                    while (!tokenStack.peek().equals("(")) {
+                        postFix.add(tokenStack.pop());
+                    }
+                    //remove the extra '('
+                    tokenStack.pop();
+                } else if (operator.containsKey(token)) {
+                    while (!tokenStack.peek().equals("(") && operator.get(token) <= operator.get(tokenStack.peek()))
+                        postFix.add(tokenStack.pop());
+                    tokenStack.push(token);
+                } else //it is a variable
+                {
+                    postFix.add(token);
                 }
-                //remove the extra '('
-                tokenStack.pop();
-            } else if (operator.containsKey(token)) {
-                while (!tokenStack.peek().equals("(") && operator.get(token) <= operator.get(tokenStack.peek()))
-                    postFix.add(tokenStack.pop());
-                tokenStack.push(token);
-            } else //it is a variable
-            {
-                postFix.add(token);
             }
+        }
+        catch (EmptyStackException e)
+        {
+            isValidExpression = false;
+            return;
         }
 
         if (LoggerConfig.ON) {
@@ -169,137 +180,104 @@ public class EquationEvaluator {
         }
     }
 
-    public static boolean isNumeric(String str)
-    {
-        return str.matches("-?\\d+(\\.\\d+)?");
-    }
-
-    private static boolean isBinaryOperator(String str)
-    {
-        switch (str)
-        {
-            case "+":
-            case "-":
-            case "*":
-            case "/":
-            case "^": return true;
-            default: return false;
-        }
-    }
-
-
     public double eval(double x) throws InvalidPostfixException {
 
         if (LoggerConfig.ON) {
             Log.d(TAG, "Evaluating postfix.");
         }
 
+        if (!isValidExpression)
+        {
+            throw new InvalidPostfixException();
+        }
+
         Stack<Double> stack = new Stack<Double>();
         double var2, var1;
 
-        for (String token : postFix)
-        {
-            if (isNumeric(token))
-            {
-                stack.push(Double.parseDouble(token));
-            }
-            else if (operator.containsKey(token))
-            {
-                if (isBinaryOperator(token))
-                {
-                    //if stack is empty.
-                    try {
+        try {
+            for (String token : postFix) {
+                try {
+                    stack.push(Double.parseDouble(token));
+                } catch (NumberFormatException nfe) {
+                    if (operator.containsKey(token) && operator.get(token) < 4) {
+                        //if stack is empty.
                         var2 = stack.pop();
                         var1 = stack.pop();
-                    } catch (EmptyStackException e) {
-                        throw new InvalidPostfixException();
-                    }
 
-                    switch (token)
-                    {
-                        case "+":
-                            stack.push(var1 + var2);
-                            break;
-                        case "-":
-                            stack.push(var1 - var2);
-                            break;
-                        case "*":
-                            stack.push(var1 * var2);
-                            break;
-                        case "/":
-                            stack.push(var1 / var2);
-                            break;
-                        case "^":
-                            stack.push(Math.pow(var1, var2));
-                            break;
-                    }
-                }
-                else
-                {
-                    try {
+                        switch (token) {
+                            case "+":
+                                stack.push(var1 + var2);
+                                break;
+                            case "-":
+                                stack.push(var1 - var2);
+                                break;
+                            case "*":
+                                stack.push(var1 * var2);
+                                break;
+                            case "/":
+                                stack.push(var1 / var2);
+                                break;
+                            case "^":
+                                stack.push(Math.pow(var1, var2));
+                                break;
+                        }
+                    } else if (operator.containsKey(token) && operator.get(token) == 4) {
                         var1 = stack.pop();
-                    } catch (EmptyStackException e) {
+
+                        switch (token) {
+                            case "√":
+                                stack.push(Math.sqrt(var1));
+                                break;
+                            case "sin":
+                                stack.push(Math.sin(var1));
+                                break;
+                            case "cos":
+                                stack.push(Math.cos(var1));
+                                break;
+                            case "tan":
+                                stack.push(Math.tan(var1));
+                                break;
+                            case "log":
+                                stack.push(Math.log10(var1));
+                                break;
+                            case "ln":
+                                stack.push(Math.log(var1));
+                                break;
+                            case "asin":
+                                stack.push(Math.asin(var1));
+                                break;
+                            case "acos":
+                                stack.push(Math.acos(var1));
+                                break;
+                            case "atan":
+                                stack.push(Math.atan(var1));
+                                break;
+                        }
+                    } else if (token.equals("x")) {
+                        stack.push(x);
+                    } else {
                         throw new InvalidPostfixException();
                     }
-
-                    switch (token)
-                    {
-                        case "√":
-                            stack.push(Math.sqrt(var1));
-                            break;
-                        case "sin":
-                            stack.push(Math.sin(var1));
-                            break;
-                        case "cos":
-                            stack.push(Math.cos(var1));
-                            break;
-                        case "tan":
-                            stack.push(Math.tan(var1));
-                            break;
-                        case "log":
-                            stack.push(Math.log10(var1));
-                            break;
-                        case "ln":
-                            stack.push(Math.log(var1));
-                            break;
-                        case "asin":
-                            stack.push(Math.asin(var1));
-                            break;
-                        case "acos":
-                            stack.push(Math.acos(var1));
-                            break;
-                        case "atan":
-                            stack.push(Math.atan(var1));
-                            break;
-                    }
-                }
-            }
-            else //it is a variable.
-            {
-                if (token.equals("x"))
-                {
-                    stack.push(x);
-                }
-                else
-                {
-                    throw new InvalidPostfixException();
                 }
             }
         }
+        catch (EmptyStackException e)
+        {
+            throw new InvalidPostfixException();
+        }
 
-        if (stack.size() > 1)
+        if (stack.size() != 1)
             throw new InvalidPostfixException();
 
         if (LoggerConfig.ON)
-            Log.d(TAG, "The result is " + Double.toString(stack.peek()));
+            Log.d(TAG, "The result is " + stack.peek());
 
         return stack.pop();
     }
 
     public boolean isValid()
     {
-
-        if (mainStr.isEmpty())
+        if (mainStr.isEmpty() || !isValidExpression)
             return false;
 
         try {

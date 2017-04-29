@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="CustomButton">
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:disabledAlpha">12</item>
+    </style>
+
 </resources>
