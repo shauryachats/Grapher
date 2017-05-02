@@ -69,6 +69,9 @@ public class GraphicActivity extends AppCompatActivity{
         private static final double PRECISION_WHEN_MOVING = 30;
         private static final double PRECISION_WHEN_STATIC = 200;
 
+        double previousScaleFactor;
+        double currentScaleFactor;
+
         public CanvasView(Context context) {
             super(context);
 
@@ -79,33 +82,41 @@ public class GraphicActivity extends AppCompatActivity{
                 @Override
                 public boolean onScale(ScaleGestureDetector detector) {
                     Log.d(TAG, "Zoom ongoing, scale" + detector.getScaleFactor());
-                    double scaleFactor = detector.getScaleFactor();
+                    currentScaleFactor = detector.getScaleFactor();
 
-                    if (scaleFactor > 1) scaleFactor = Math.sqrt(scaleFactor);
-                    else scaleFactor *= scaleFactor;
+                    scale = previousScaleFactor / currentScaleFactor;
 
-                    scale /= detector.getScaleFactor();
+                    precision = PRECISION_WHEN_MOVING;
                     invalidate();
+
                     return false;
                 }
 
                 @Override
                 public boolean onScaleBegin(ScaleGestureDetector detector) {
+                    previousScaleFactor = scale;
                     return true;
                 }
 
                 @Override
                 public void onScaleEnd(ScaleGestureDetector detector) {
 
+                    scale = previousScaleFactor / currentScaleFactor;
+                    precision = PRECISION_WHEN_STATIC;
+                    invalidate();
                 }
             });
         }
 
+        /**
+         *
+         *  These functions convert the x, y coordinates of the graph to the X, Y coordinates of the screen.
+         *
+         */
         double getXCoords(double x)
         {
             return semiwidth + (x - centerX) * (semiwidth / scale);
         }
-
         double getYCoords(double y)
         {
             return semiheight - (y - centerY) * (semiheight / scale);
@@ -120,7 +131,6 @@ public class GraphicActivity extends AppCompatActivity{
             int fingersHere = event.getPointerCount();
 
             if (fingersHere > 1) {
-                precision = PRECISION_WHEN_MOVING;
                 multiTouch = true;
                 return true;
             }
@@ -134,10 +144,7 @@ public class GraphicActivity extends AppCompatActivity{
             {
                 return true;
             }
-            else if (fingersHere == 1)
-            {
-                precision = PRECISION_WHEN_STATIC;
-            }
+
 
             float eventX = event.getX();
             float eventY = event.getY();
@@ -151,8 +158,8 @@ public class GraphicActivity extends AppCompatActivity{
                 case MotionEvent.ACTION_MOVE:
                     precision = PRECISION_WHEN_MOVING;
                     Log.d(TAG + "***", "" + event.getX() + " " + event.getY());
-                    centerX -= round((eventX - prevX)/1000f * scale,3);
-                    centerY += round((eventY - prevY)/1000f * scale,3);
+                    centerX -= round((eventX - prevX)/500f * scale,3);
+                    centerY += round((eventY - prevY)/500f * scale,3);
                     prevX = eventX;
                     prevY = eventY;
                     invalidate();
