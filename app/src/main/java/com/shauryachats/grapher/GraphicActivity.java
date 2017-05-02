@@ -66,6 +66,9 @@ public class GraphicActivity extends AppCompatActivity{
         private static final int MAX_X_TEXT_GAP_FROM_GRID = 35;
         private static final int MAX_Y_TEXT_GAP_FROM_GRID = 70;
 
+        private static final double PRECISION_WHEN_MOVING = 30;
+        private static final double PRECISION_WHEN_STATIC = 200;
+
         public CanvasView(Context context) {
             super(context);
 
@@ -117,6 +120,7 @@ public class GraphicActivity extends AppCompatActivity{
             int fingersHere = event.getPointerCount();
 
             if (fingersHere > 1) {
+                precision = PRECISION_WHEN_MOVING;
                 multiTouch = true;
                 return true;
             }
@@ -130,6 +134,10 @@ public class GraphicActivity extends AppCompatActivity{
             {
                 return true;
             }
+            else if (fingersHere == 1)
+            {
+                precision = PRECISION_WHEN_STATIC;
+            }
 
             float eventX = event.getX();
             float eventY = event.getY();
@@ -141,6 +149,7 @@ public class GraphicActivity extends AppCompatActivity{
                     prevY = eventY;
                     return true;
                 case MotionEvent.ACTION_MOVE:
+                    precision = PRECISION_WHEN_MOVING;
                     Log.d(TAG + "***", "" + event.getX() + " " + event.getY());
                     centerX -= round((eventX - prevX)/1000f * scale,3);
                     centerY += round((eventY - prevY)/1000f * scale,3);
@@ -149,6 +158,12 @@ public class GraphicActivity extends AppCompatActivity{
                     invalidate();
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
+                    Log.d(TAG, "Pointer action up");
+                    break;
+                case MotionEvent.ACTION_UP:
+                    precision = PRECISION_WHEN_STATIC;
+                    Log.d(TAG + "!", "Pointer up");
+                    invalidate();
                     break;
                 default:
                     return false;
@@ -205,12 +220,12 @@ public class GraphicActivity extends AppCompatActivity{
             paint.setStrokeJoin(Paint.Join.ROUND);
             paint.setStrokeWidth(3f);
 
-            double EPS = round(scale/precision, 5);
+            double EPS = scale/precision;
 
             double prevx = 0.0, prevy = 0.0;
 
-            double XLeftLimit = round(centerX - scale,3);
-            double XRightLimit = round(centerX + scale,3);
+            double XLeftLimit = centerX - scale;
+            double XRightLimit = centerX + scale;
 
             boolean first = false;
 
