@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Grapher</string>
+    <string name="add">Add</string>
+    <string name="plot">Plot</string>
+    <string name="remove">Remove</string>
+    <string name="introText">Enter expressions.</string>
 </resources>

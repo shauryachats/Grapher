@@ -41,15 +41,17 @@ public class EquationEvaluator {
     private ArrayList<String> splitStr;
     private ArrayList<String> postFix;
 
+    private int paranthesesWeight;
+
     boolean isValidExpression;
 
     private void initRegString()
     {
-        regexString += "([0-9]{0,10}\\.[0-9]{0,10})|";  //decimal numbers
-        regexString += "([0-9]{1,10})|";                //natural numbers
-        regexString += "(sin)|(cos)|(tan)|(asin)|(acos)|(atan)|";            //trigonometric functions
-        regexString += "(log)|(ln)|";                   //logarithmic functions
-        regexString += ".";                             //any other character (assuming variables are one character)
+        regexString += "([0-9]{0,10}\\.[0-9]{0,10})|";                       //decimal numbers
+        regexString += "([0-9]{1,10})|";                                    //natural numbers
+        regexString += "(sin)|(cos)|(tan)|(asin)|(acos)|(atan)|(mod)|";            //trigonometric functions
+        regexString += "(log)|(ln)|";                                       //logarithmic functions
+        regexString += ".";                                                 //any other character (assuming variables are one character)
     }
 
     public ArrayList<String> getPostfix()
@@ -109,6 +111,7 @@ public class EquationEvaluator {
         operator.put("asin", 4);
         operator.put("acos", 4);
         operator.put("atan", 4);
+        operator.put("mod", 4);
     }
 
     // splitting infix terms.
@@ -252,10 +255,18 @@ public class EquationEvaluator {
                             case "atan":
                                 stack.push(Math.atan(var1));
                                 break;
+                            case "mod":
+                                stack.push(Math.abs(var1));
+                                break;
                         }
                     } else if (token.equals("x")) {
                         stack.push(x);
-                    } else {
+                    } else if (token.equals("e")) {
+                        stack.push(Math.E);
+                    } else if (token.equals("π")) {
+                        stack.push(Math.PI);
+                    }
+                    else {
                         throw new InvalidPostfixException();
                     }
                 }
@@ -280,6 +291,21 @@ public class EquationEvaluator {
         if (mainStr.isEmpty() || !isValidExpression)
             return false;
 
+        //Check parantheses check.
+
+        paranthesesWeight = 0;
+        for (char c : mainStr.toCharArray())
+        {
+            if (c == '(')
+                paranthesesWeight++;
+            else if (c == ')')
+                --paranthesesWeight;
+        }
+
+        if (paranthesesWeight != 0)
+            return false;
+
+        //Try evaluating.
         try {
             eval(0);
         }

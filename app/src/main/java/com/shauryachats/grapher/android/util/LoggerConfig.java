@@ -6,5 +6,5 @@ package com.shauryachats.grapher.android.util;
 
 
 public class LoggerConfig {
-    public static final boolean ON = false;
+    public static final boolean ON = true;
 }

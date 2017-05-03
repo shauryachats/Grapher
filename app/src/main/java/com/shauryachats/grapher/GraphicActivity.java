@@ -15,6 +15,9 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import com.shauryachats.grapher.android.util.LoggerConfig;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -31,7 +34,6 @@ public class GraphicActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
@@ -51,10 +53,10 @@ public class GraphicActivity extends AppCompatActivity{
     }
 
     public class CanvasView extends View {
-        private static final long ALLOWED_TIME = 100;
+        private static final long ALLOWED_TIME = 400;
 
         int semiheight, semiwidth;
-        double scale = 1.0f;
+        double scale = 5.0f;
         double centerX = 0.0f, centerY = 0.0f;
 
         boolean multiTouch = false;
@@ -67,7 +69,10 @@ public class GraphicActivity extends AppCompatActivity{
         private static final int MAX_Y_TEXT_GAP_FROM_GRID = 70;
 
         private static final double PRECISION_WHEN_MOVING = 30;
-        private static final double PRECISION_WHEN_STATIC = 200;
+        private static final double PRECISION_WHEN_STATIC = 100;
+
+        private static final double MINIMUM_SCALE = 0.001f;
+        private static final double MAXIMUM_SCALE = 10000f;
 
         double previousScaleFactor;
         double currentScaleFactor;
@@ -81,10 +86,12 @@ public class GraphicActivity extends AppCompatActivity{
             scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.OnScaleGestureListener() {
                 @Override
                 public boolean onScale(ScaleGestureDetector detector) {
+                    if (LoggerConfig.ON)
                     Log.d(TAG, "Zoom ongoing, scale" + detector.getScaleFactor());
-                    currentScaleFactor = detector.getScaleFactor();
 
+                    currentScaleFactor = detector.getScaleFactor();
                     scale = previousScaleFactor / currentScaleFactor;
+                    setScaleInRange();
 
                     precision = PRECISION_WHEN_MOVING;
                     invalidate();
@@ -100,8 +107,10 @@ public class GraphicActivity extends AppCompatActivity{
 
                 @Override
                 public void onScaleEnd(ScaleGestureDetector detector) {
-
                     scale = previousScaleFactor / currentScaleFactor;
+
+                    setScaleInRange();
+
                     precision = PRECISION_WHEN_STATIC;
                     invalidate();
                 }
@@ -156,20 +165,25 @@ public class GraphicActivity extends AppCompatActivity{
                     prevY = eventY;
                     return true;
                 case MotionEvent.ACTION_MOVE:
+                    if (LoggerConfig.ON)
+                    Log.d(TAG, "" + event.getX() + " " + event.getY());
+
                     precision = PRECISION_WHEN_MOVING;
-                    Log.d(TAG + "***", "" + event.getX() + " " + event.getY());
-                    centerX -= round((eventX - prevX)/500f * scale,3);
-                    centerY += round((eventY - prevY)/500f * scale,3);
+                    centerX -= (eventX - prevX)/500f * scale;
+                    centerY += (eventY - prevY)/500f * scale;
                     prevX = eventX;
                     prevY = eventY;
                     invalidate();
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
+                    if (LoggerConfig.ON)
                     Log.d(TAG, "Pointer action up");
                     break;
                 case MotionEvent.ACTION_UP:
+                    if (LoggerConfig.ON)
+                    Log.d(TAG, "Pointer up");
+
                     precision = PRECISION_WHEN_STATIC;
-                    Log.d(TAG + "!", "Pointer up");
                     invalidate();
                     break;
                 default:
@@ -183,12 +197,12 @@ public class GraphicActivity extends AppCompatActivity{
         double round(double num, double precision)
         {
             double val = Math.pow(10.0f, precision);
-            return Math.floor(num * val) / val;
+            return Math.round(num * val) / val;
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
-            Log.d(TAG, "Calling onDraw()");
+
             super.onDraw(canvas);
 
             semiheight = canvas.getHeight()/2;
@@ -203,9 +217,8 @@ public class GraphicActivity extends AppCompatActivity{
 
             drawGrid(canvas);
             drawAxes(canvas);
-            //drawOrigin(canvas);
 
-            int[] colors = {Color.RED, Color.BLUE, Color.YELLOW};
+            int[] colors = {Color.RED, Color.BLUE, Color.GREEN};
             int i = 0;
 
             for (EquationEvaluator e : equationEvaluators)
@@ -277,68 +290,72 @@ public class GraphicActivity extends AppCompatActivity{
 
             double mnx = Math.ceil(Math.log10(scale));
             double tens = Math.pow(10, mnx);
-            float gap = 0;
+
+            BigDecimal gap; //using BigDecimal to retain precision
+            gap = BigDecimal.valueOf(tens);
 
             float absval = (float) (scale/tens);
             if (absval <= 0.3) {
-                gap = (float) (tens/20);
+                gap = gap.divide(BigDecimal.valueOf(20));
             } else if (absval <= 0.7) {
-                gap = (float) (tens/10);
+                gap = gap.divide(BigDecimal.valueOf(10));
             } else {
-                gap = (float) (tens/5);
+                gap = gap.divide(BigDecimal.valueOf(5));
             }
 
-            Log.d("Bull", "gap " + gap);
-            //gap = (float) round(gap, rounder);
+            int leftX = (int) Math.ceil((centerX - scale)/gap.doubleValue());
+            int rightX = (int) Math.floor((centerX + scale)/gap.doubleValue());
 
-            Log.d("Bull", "" + mnx + " " + scale + " " + gap);
-
-            int leftX = (int) Math.ceil((centerX - scale)/gap);
-            int rightX = (int) Math.floor((centerX + scale)/gap);
-
-            Log.d("Bull", "leftx " + leftX + " rightx " + rightX);
+            if (LoggerConfig.ON)
+                Log.d("Bull", "leftx " + leftX + " rightx " + rightX);
 
             //Drawing grids parallel to the Y axis.
             for (int i = leftX; i <= rightX; ++i)
             {
-                float x = (float) getXCoords(i * gap);
+                float x = (float) getXCoords(i * gap.doubleValue());
                 canvas.drawLine(x, 0.0f, x, 2*semiheight, paint);
 
                 float y = (float) getYCoords(0);
                 if (y < MAX_X_TEXT_GAP_FROM_GRID) y = MAX_X_TEXT_GAP_FROM_GRID;
                 else if (y > 2*semiheight - MIN_TEXT_GAP_FROM_GRID) y = 2*semiheight - MIN_TEXT_GAP_FROM_GRID;
 
-                if (gap >= 1)
-                    canvas.drawText("" + (int)(i*gap), x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
+                if (gap.doubleValue() >= 1)
+                    canvas.drawText("" + (int)(i*gap.doubleValue()), x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
                 else
-                    canvas.drawText("" + i*gap, x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
-
+                    canvas.drawText("" + gap.multiply(BigDecimal.valueOf(i)), x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
             }
 
-            int upY = (int) Math.ceil((centerY - scale)/gap);
-            int downY = (int) Math.floor((centerY + scale)/gap);
+            int upY = (int) Math.ceil((centerY - scale)/gap.doubleValue());
+            int downY = (int) Math.floor((centerY + scale)/gap.doubleValue());
 
-            Log.d("Bull", "upY " + upY + " downY " + downY);
+            if (LoggerConfig.ON)
+                Log.d("Bull", "upY " + upY + " downY " + downY);
 
             for (int i = upY; i <= downY; ++i)
             {
-                float y = (float) getYCoords(i * gap);
+                float y = (float) getYCoords(i * gap.doubleValue());
                 canvas.drawLine(0.0f, y, 2*semiwidth, y, paint);
 
                 float x = (float) getXCoords(0);
                 if (x < 0) x = MIN_TEXT_GAP_FROM_GRID;
                 else if (x > 2*semiwidth - MAX_Y_TEXT_GAP_FROM_GRID) x = 2*semiwidth - MAX_Y_TEXT_GAP_FROM_GRID;
 
-                if (gap >= 1)
-                    canvas.drawText("" + (int)(i*gap), x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
+                if (gap.doubleValue() >= 1)
+                    canvas.drawText("" + (int)(i*gap.doubleValue()), x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
                 else
-                    canvas.drawText("" + i*gap, x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
+                    canvas.drawText("" + gap.multiply(BigDecimal.valueOf(i)), x + MIN_TEXT_GAP_FROM_GRID, y - MIN_TEXT_GAP_FROM_GRID, textPaint);
             }
+        }
+
+        private void setScaleInRange() {
+            if (scale > MAXIMUM_SCALE)
+                scale = MAXIMUM_SCALE;
+            else if (scale < MINIMUM_SCALE)
+                scale = MINIMUM_SCALE;
         }
 
         /**
          * Draws the X and Y axis.
-         * @param canvas
          */
         private void drawAxes(Canvas canvas) {
             Paint paint = new Paint();

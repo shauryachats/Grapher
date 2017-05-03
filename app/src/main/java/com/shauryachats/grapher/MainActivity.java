@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -89,15 +90,10 @@ public class MainActivity extends AppCompatActivity {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 //Shift control to GraphicActivity
                 graphicActivity(v, newAdapter.getExpressions(), 70f);
-
-
             }
         });
-
-
     }
 
     // Methdd to shift from MainActivity to GraphicActivity
@@ -111,4 +107,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
+    }
 }

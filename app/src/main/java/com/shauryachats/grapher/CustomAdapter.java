@@ -19,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.shauryachats.grapher.android.util.LoggerConfig;
+
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
@@ -35,13 +37,12 @@ class CustomAdapter extends ArrayAdapter<Character> {
     ArrayList<Boolean> validExpressions;
     Button submitButton;
 
-    int[] colors = {Color.RED, Color.BLUE, Color.YELLOW};
+    int[] colors = {Color.RED, Color.BLUE, Color.GREEN};
+    int[] hintColors = {Color.parseColor("#DD9999"), Color.parseColor("#9999DD"), Color.parseColor("#99DD99")};
 
     public CustomAdapter(@NonNull Context context, ArrayList<Character> data, Button button) {
         super(context, R.layout.items, data);
-        Log.d(TAG, "ctor()");
 
-        Log.d(TAG, data.toString());
         expressions = new ArrayList<>();
         validExpressions = new ArrayList<>();
 
@@ -53,16 +54,17 @@ class CustomAdapter extends ArrayAdapter<Character> {
     @Override
     public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
+        if (LoggerConfig.ON)
         Log.d(TAG, "in getView(" + position + ")");
 
         LayoutInflater layoutInflater = LayoutInflater.from(getContext());
         final View view = layoutInflater.inflate(R.layout.items, parent, false);
 
         final EditText editText = (EditText) view.findViewById(R.id.items_edittext);
-        final TextView textView = (TextView) view.findViewById(R.id.items_textview);
 
-        textView.setText(CustomAdapter.this.getItem(position) + "(x) = ");
-        textView.setTextColor(colors[position]);
+        editText.setHint(CustomAdapter.this.getItem(position) + "(x)");
+        editText.setHintTextColor(hintColors[position]);
+        editText.setTextColor(colors[position]);
 
         try {
             editText.setText(expressions.get(position));
@@ -96,24 +98,28 @@ class CustomAdapter extends ArrayAdapter<Character> {
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (LoggerConfig.ON)
                 Log.d(TAG, "Editable = " + s.toString());
+
                 expressions.set(position, s.toString());
                 validExpressions.set(position, new EquationEvaluator(s.toString()).isValid());
                 submitButton.setEnabled(allExpressionsValid());
             }
         });
 
-        String debugStr = "";
-        for (String str : expressions)
-            debugStr += str + ";";
+        if (LoggerConfig.ON) {
+            String debugStr = "";
+            for (String str : expressions)
+                debugStr += str + ";";
 
-        Log.d(TAG, debugStr);
+            Log.d(TAG, debugStr);
 
-        debugStr = "";
-        for (boolean b : validExpressions)
-            debugStr += b + ";";
+            debugStr = "";
+            for (boolean b : validExpressions)
+                debugStr += b + ";";
 
-        Log.d(TAG, debugStr);
+            Log.d(TAG, debugStr);
+        }
 
         submitButton.setEnabled(allExpressionsValid());
         return view;
@@ -138,14 +144,19 @@ class CustomAdapter extends ArrayAdapter<Character> {
     @Override
     public void remove(@Nullable Character object) {
         super.remove(object);
-        Log.d(TAG, "in remove(" + object+ ")");
+
+        if (LoggerConfig.ON)
+            Log.d(TAG, "in remove(" + object+ ")");
         notifyDataSetChanged();
     }
 
     @Override
     public void add(@Nullable Character object) {
         super.add(object);
-        Log.d(TAG, "in add(" + object + ")");
+
+        if (LoggerConfig.ON)
+            Log.d(TAG, "in add(" + object + ")");
+
         notifyDataSetChanged();
     }
 
