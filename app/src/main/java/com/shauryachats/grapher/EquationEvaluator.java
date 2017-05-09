@@ -75,11 +75,17 @@ public class EquationEvaluator {
         mainStr = str;
 
         //if mainStr is starting with a negative sign, append a 0.
-        if (mainStr.charAt(0) == '-')
-            mainStr = '0' + mainStr;
+       // if (mainStr.charAt(0) == '-')
+         //   mainStr = '0' + mainStr;
 
         //pre-append and post-append brackets for easy eval.
         mainStr = "(" + mainStr + ')';
+
+        for (int i = 0; i < mainStr.length()-1; ++i)
+        {
+            if (mainStr.toCharArray()[i] == '(' && mainStr.toCharArray()[i+1] == '-')
+                mainStr = mainStr.substring(0, i+1) + '0' + mainStr.substring(i+1);
+        }
 
         isValidExpression = true; //Assuming that the expression given to us to be parsed is valid.
 
@@ -202,6 +208,7 @@ public class EquationEvaluator {
                 try {
                     stack.push(Double.parseDouble(token));
                 } catch (NumberFormatException nfe) {
+
                     if (operator.containsKey(token) && operator.get(token) < 4) {
                         //if stack is empty.
                         var2 = stack.pop();

@@ -47,9 +47,7 @@ public class GraphicActivity extends AppCompatActivity{
         }
 
         precision = bundle.getDouble("precision");
-
         setContentView(new CanvasView(this));
-
     }
 
     public class CanvasView extends View {
@@ -226,9 +224,6 @@ public class GraphicActivity extends AppCompatActivity{
                 drawGraph(canvas, e, colors[i]);
                 ++i;
             }
-
-            if (Build.VERSION.SDK_INT != Build.VERSION_CODES.M)
-                canvas.restore();
         }
 
         private void drawGraph(Canvas canvas, EquationEvaluator equationEvaluator, int color) {
